@@ -2,8 +2,8 @@ name: Daily Meal Scraper
 
 on:
   schedule:
-    # 매주 일요일 12:00 UTC = 21:00 KST
-    - cron: '0 12 * * 0'
+    # 매일 15:00 UTC = 매일 00:00 KST
+    - cron: '0 15 * * *'
   workflow_dispatch:
 
 jobs:
