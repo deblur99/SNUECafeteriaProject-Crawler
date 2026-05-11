@@ -26,23 +26,23 @@ function initFirebase() {
 
 /**
  * 식단 배열을 Firestore 저장 전 정규화한다.
- * - 문자열 또는 { name: string } 객체를 모두 처리한다.
- * - trim 처리한다.
- * - 빈 문자열은 제거한다.
- * - '휴무'가 포함되면 빈 배열을 반환한다.
+ * - { name: string } 객체를 처리한다.
+ * - name을 trim 처리한다.
+ * - name이 빈 문자열인 항목은 제거한다.
+ * - name에 '휴무'가 포함된 항목이 하나라도 있으면 빈 배열을 반환한다.
+ *
+ * @param {Array<{ name: string }>} items
+ * @returns {Array<{ name: string }>}
  */
 function normalizeMealItems(items) {
   if (!Array.isArray(items)) return [];
 
   const normalized = items
-    .map((item) => {
-      if (typeof item === 'string') return item.trim();
-      if (item && typeof item.name === 'string') return item.name.trim();
-      return '';
-    })
-    .filter(Boolean);
+    .filter((item) => item && typeof item.name === 'string')
+    .map((item) => ({ name: item.name.trim() }))
+    .filter((item) => item.name !== '');
 
-  if (normalized.some((item) => item.includes('휴무'))) {
+  if (normalized.some((item) => item.name.includes('휴무'))) {
     return [];
   }
 
