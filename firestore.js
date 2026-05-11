@@ -26,7 +26,7 @@ function initFirebase() {
 
 /**
  * 식단 배열을 Firestore 저장 전 정규화한다.
- * - 문자열만 남긴다.
+ * - 문자열 또는 { name: string } 객체를 모두 처리한다.
  * - trim 처리한다.
  * - 빈 문자열은 제거한다.
  * - '휴무'가 포함되면 빈 배열을 반환한다.
@@ -35,7 +35,11 @@ function normalizeMealItems(items) {
   if (!Array.isArray(items)) return [];
 
   const normalized = items
-    .map((item) => (typeof item === 'string' ? item.trim() : ''))
+    .map((item) => {
+      if (typeof item === 'string') return item.trim();
+      if (item && typeof item.name === 'string') return item.name.trim();
+      return '';
+    })
     .filter(Boolean);
 
   if (normalized.some((item) => item.includes('휴무'))) {
