@@ -28,6 +28,7 @@ function initFirebase() {
  * 파싱된 식단 배열을 Firestore에 일괄 저장한다.
  * 문서 ID = dateString ("2026-04-27").
  * 매번 전체 덮어쓰기(set without merge)하여 최신 크롤링 결과를 보장한다.
+ * lunch, dinner 각 배열에 '휴무'가 포함되어 있으면 해당 배열은 빈 배열로 처리된다.
  *
  * @param {import('./parser').MealData[]} meals
  */
@@ -37,12 +38,18 @@ async function saveMealsToFirestore(meals) {
   const now = admin.firestore.Timestamp.now();
 
   for (const meal of meals) {
+    const normalizedLunch =
+      meal.lunch?.length === 1 && meal.lunch[0]?.name?.includes('휴무') ? [] : meal.lunch;
+
+    const normalizedDinner =
+      meal.dinner?.length === 1 && meal.dinner[0]?.name?.includes('휴무') ? [] : meal.dinner;
+
     const docRef = mealsRef.doc(meal.id);
     batch.set(docRef, {
       date: admin.firestore.Timestamp.fromDate(meal.date),
       dateString: meal.dateString,
-      lunch: meal.lunch,
-      dinner: meal.dinner,
+      lunch: normalizedLunch,
+      dinner: normalizedDinner,
       isHoliday: meal.isHoliday,
       createdAt: now,
       version: 1,
@@ -50,7 +57,7 @@ async function saveMealsToFirestore(meals) {
 
     const summary = meal.isHoliday
       ? '휴무'
-      : `점심 ${meal.lunch.length}개 / 석식 ${meal.dinner.length}개`;
+      : `점심 ${normalizedLunch.length}개 / 석식 ${normalizedDinner.length}개`;
     console.log(`[firestore] 저장 대기: ${meal.id} (${summary})`);
   }
 
