@@ -61,27 +61,25 @@ async function saveMealsToFirestore(meals) {
   for (const meal of meals) {
     const normalizedLunch = normalizeMealItems(meal.lunch);
     const normalizedDinner = normalizeMealItems(meal.dinner);
-    const derivedHoliday =
-      meal.isHoliday || (normalizedLunch.length === 0 && normalizedDinner.length === 0);
-
+  
     console.log('[debug] meal.id =', meal.id);
     console.log('[debug] raw lunch =', JSON.stringify(meal.lunch));
     console.log('[debug] raw dinner =', JSON.stringify(meal.dinner));
     console.log('[debug] normalizedLunch =', JSON.stringify(normalizedLunch));
     console.log('[debug] normalizedDinner =', JSON.stringify(normalizedDinner));
-
+  
     const docRef = mealsRef.doc(meal.id);
     batch.set(docRef, {
       date: admin.firestore.Timestamp.fromDate(meal.date),
       dateString: meal.dateString,
       lunch: normalizedLunch,
       dinner: normalizedDinner,
-      isHoliday: derivedHoliday,
+      isHoliday: meal.isHoliday,
       createdAt: now,
       version: 1,
     });
-
-    const summary = derivedHoliday
+  
+    const summary = meal.isHoliday
       ? '휴무'
       : `점심 ${normalizedLunch.length}개 / 석식 ${normalizedDinner.length}개`;
     console.log(`[firestore] 저장 대기: ${meal.id} (${summary})`);
