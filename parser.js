@@ -39,7 +39,7 @@ async function parseWeekMeals(page, refYear, refMonth) {
 
         const dateMD = dateEl.textContent.trim(); // "04.27"
         const text = menuEl.textContent.trim();
-        const isHoliday = text === '휴무';
+        const isHoliday = text.startsWith('휴무');
 
         // <p> 안의 텍스트 노드들을 메뉴 항목으로 파싱
         const menuItems = isHoliday
